@@ -78,3 +78,10 @@ Screaming Frog SEO Spider must be installed at the default macOS location:
 ```
 
 Override with `--sf-binary` if installed elsewhere. The `crawl` and `from-db` commands require a valid Screaming Frog license for headless mode.
+
+## TODO
+
+- [ ] Use `.env` for configuration (SF binary path, default config, output directory)
+- [ ] Add interactive CLI interface with Typer prompts (URL input, config selection, output options)
+- [ ] Dockerize with Screaming Frog installed in the container for fully self-contained headless crawls
+- [ ] Better management of export files (timestamped output dirs, automatic cleanup of old exports, list/diff past crawls)
