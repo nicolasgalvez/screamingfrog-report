@@ -1,0 +1,14 @@
+# Screaming Frog data
+*.dbseospider
+*.seospider
+db-exports/
+report_exports/
+*.xlsx
+
+# Python
+.venv/
+__pycache__/
+*.egg-info/
+
+# IDE / misc
+.history/

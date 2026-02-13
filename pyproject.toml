@@ -1,0 +1,23 @@
+[project]
+name = "screamingfrog-report"
+version = "0.1.0"
+description = "Automate Screaming Frog crawl exports into Excel reports"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "openpyxl>=3.1.5",
+    "pandas>=3.0.0",
+    "typer>=0.23.0",
+]
+
+[project.scripts]
+sfreport = "sfreport.cli:app"
+
+[tool.setuptools.packages.find]
+include = ["sfreport*"]
+
+[dependency-groups]
+dev = [
+    "pre-commit>=4.5.1",
+    "ruff>=0.15.1",
+]
