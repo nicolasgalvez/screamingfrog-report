@@ -45,6 +45,46 @@ uv run sfreport from-db db-exports/my-crawl.dbseospider -o report.xlsx
 
 Add `--keep-exports` to retain the intermediate CSV files.
 
+### Export inlinks
+
+Export inlinks from a saved crawl database, optionally filtered by response status:
+
+```bash
+# All inlinks
+uv run sfreport inlinks db-exports/my-crawl.dbseospider
+
+# Only 4xx (broken link) inlinks
+uv run sfreport inlinks db-exports/my-crawl.dbseospider -s 4xx
+
+# Only internal broken links (pages on your site linking to your own 404s)
+uv run sfreport inlinks db-exports/my-crawl.dbseospider -s 4xx --internal
+
+# Only external broken links (your pages linking to dead external URLs)
+uv run sfreport inlinks db-exports/my-crawl.dbseospider -s 4xx --external
+```
+
+Status options: `all`, `2xx`, `3xx`, `4xx`, `5xx`. Output goes to `exports/<crawl-name>/` by default, override with `-o`.
+
+### Run Screaming Frog directly
+
+Pass arbitrary arguments to the SF CLI:
+
+```bash
+uv run sfreport sf -- --help
+uv run sfreport sf -- --headless --crawl https://example.com --output-folder ./out
+```
+
+## Configuration
+
+Create a `.sfreport.toml` file to configure the SF binary path (instead of passing `--sf-binary` every time):
+
+```toml
+[screaming_frog]
+binary = "/Applications/Screaming Frog SEO Spider.app/Contents/MacOS/ScreamingFrogSEOSpiderLauncher"
+```
+
+Checked in order: `~/.sfreport.toml` (user-level), then `.sfreport.toml` (project-level). Project-level overrides user-level.
+
 ## Output
 
 The generated `.xlsx` workbook contains:
@@ -62,7 +102,8 @@ Pages with identical issue sets are deduplicated into a single sheet listing all
 
 ```
 sfreport/
-  cli.py        # Typer CLI with crawl, report, from-db commands
+  cli.py        # Typer CLI with crawl, report, from-db, inlinks, sf commands
+  config.py     # TOML config loading (~/.sfreport.toml, .sfreport.toml)
   crawl.py      # Screaming Frog CLI automation (headless mode)
   report.py     # CSV parsing + Excel workbook generation
 config/         # .seospiderconfig files for crawl settings
@@ -77,11 +118,9 @@ Screaming Frog SEO Spider must be installed at the default macOS location:
 /Applications/Screaming Frog SEO Spider.app
 ```
 
-Override with `--sf-binary` if installed elsewhere. The `crawl` and `from-db` commands require a valid Screaming Frog license for headless mode.
+Override with `--sf-binary` or via `.sfreport.toml` (see Configuration above). The `crawl`, `from-db`, and `inlinks` commands require a valid Screaming Frog license for headless mode.
 
 ## TODO
-
-- [ ] Use `.env` for configuration (SF binary path, default config, output directory)
 - [ ] Add interactive CLI interface with Typer prompts (URL input, config selection, output options)
 - [ ] Dockerize with Screaming Frog installed in the container for fully self-contained headless crawls
 - [ ] Better management of export files (timestamped output dirs, automatic cleanup of old exports, list/diff past crawls)

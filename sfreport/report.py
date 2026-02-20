@@ -104,6 +104,17 @@ def _load_accessibility_summary(export_dir: Path) -> pd.DataFrame | None:
     return pd.read_csv(csv_path, encoding="utf-8-sig")
 
 
+_ASSET_EXT_RE = re.compile(
+    r"\.(?:jpg|jpeg|png|gif|svg|webp|ico|bmp|tiff"
+    r"|pdf|doc|docx|xls|xlsx|ppt|pptx"
+    r"|css|js|json|xml|txt|csv"
+    r"|woff|woff2|ttf|eot|otf"
+    r"|mp4|mp3|wav|avi|mov|webm"
+    r"|zip|gz|tar|rar)(?:\?.*)?$",
+    re.IGNORECASE,
+)
+
+
 def _load_internal_urls(export_dir: Path) -> set[str]:
     """Load the set of internal HTML page URLs from the Internal:All export."""
     csv_path = _find_csv(export_dir, "*internal_all*.csv")
@@ -116,7 +127,11 @@ def _load_internal_urls(export_dir: Path) -> set[str]:
     )
     # Only include HTML pages (not images, PDFs, CSS, JS, etc.)
     html_mask = df["Content Type"].str.contains("html", na=False)
-    return {_normalize_url(u) for u in df.loc[html_mask, "Address"].dropna()}
+    # Exclude asset file extensions even if SF reports them as text/html (soft 404s)
+    not_asset = ~df["Address"].str.contains(_ASSET_EXT_RE, na=False)
+    return {
+        _normalize_url(u) for u in df.loc[html_mask & not_asset, "Address"].dropna()
+    }
 
 
 def _load_per_page_issues(
@@ -370,6 +385,10 @@ def generate_report(export_dir: Path, output_path: Path) -> Path:
     per_page_issues = _load_per_page_issues(export_dir, issues_df, internal_urls)
     issue_url_count = len(per_page_issues)
     print(f"  Per-page issues loaded for {issue_url_count} URLs")
+
+    # --- Filter accessibility to internal HTML pages only ---
+    if a11y_df is not None and internal_urls:
+        a11y_df = a11y_df[a11y_df["URL"].isin(internal_urls)]
 
     # --- Build combined per-page data ---
     # Collect all URLs that have either accessibility or issue data

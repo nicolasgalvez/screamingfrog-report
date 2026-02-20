@@ -2,6 +2,7 @@
 *.dbseospider
 *.seospider
 db-exports/
+exports/
 report_exports/
 *.xlsx
 
@@ -10,5 +11,9 @@ report_exports/
 __pycache__/
 *.egg-info/
 
+# Environment
+.env
+
 # IDE / misc
 .history/
+config/*.seospiderconfig
